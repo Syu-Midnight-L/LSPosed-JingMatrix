@@ -1,7 +1,8 @@
 #include <dlfcn.h>
 
+#include <cinttypes>
+#include <cstdint>
 #include <lsplt.hpp>
-#include <map>
 #include <string>
 #include <string_view>
 
@@ -90,7 +91,7 @@ DCL_HOOK_FUNC(uint8_t*, _ZNK3art9OatHeader16GetKeyValueStoreEv, void* header) {
     LOGD("OatHeader::GetKeyValueStore() called on object at %p\n", header);
     uint8_t* key_value_store_ = old__ZNK3art9OatHeader16GetKeyValueStoreEv(header);
     uint32_t key_value_store_size_ = old__ZNK3art9OatHeader20GetKeyValueStoreSizeEv(header);
-    LOGD("KeyValueStore via hook: [addr: %p, size: %d]", key_value_store_, key_value_store_size_);
+    LOGD("KeyValueStore via hook: [addr: %p, size: %u]", key_value_store_, key_value_store_size_);
     store_resized = ModifyStoreInPlace(key_value_store_, key_value_store_size_);
 
     return key_value_store_;
@@ -100,14 +101,14 @@ DCL_HOOK_FUNC(void, _ZNK3art9OatHeader15ComputeChecksumEPj, void* header, uint32
     art::OatHeader* oat_header = reinterpret_cast<art::OatHeader*>(header);
     const uint8_t* key_value_store_ = oat_header->GetKeyValueStore();
     uint32_t key_value_store_size_ = oat_header->GetKeyValueStoreSize();
-    LOGD("KeyValueStore via offset: [addr: %p, size: %d]", key_value_store_, key_value_store_size_);
+    LOGD("KeyValueStore via offset: [addr: %p, size: %u]", key_value_store_, key_value_store_size_);
     store_resized =
         ModifyStoreInPlace(const_cast<uint8_t*>(key_value_store_), key_value_store_size_);
     if (store_resized) {
         oat_header->SetKeyValueStoreSize(key_value_store_size_ - param_to_remove.size());
     }
     old__ZNK3art9OatHeader15ComputeChecksumEPj(header, checksum);
-    LOGD("ComputeChecksum called: %d", *checksum);
+    LOGD("ComputeChecksum called:  %" PRIu32, *checksum);
 }
 
 #undef DCL_HOOK_FUNC
